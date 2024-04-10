@@ -1,0 +1,32 @@
+- name: Install requirements
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - curl
+    - tar
+    - ca-certificates
+
+- name: Manage runc dirs
+  ansible.builtin.file:
+    name: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+    force: true
+  loop:
+    - "{{ runc_bin_dir }}/{{ runc_version }}"
+
+- name: Download runc
+  ansible.builtin.get_url:
+    url: "{{ runc_download_url }}"
+    dest: "{{ runc_bin_dir }}/{{ runc_version }}/runc"
+    mode: '0550'
+
+- name: Create required symlinks
+  ansible.builtin.file:
+    src: "{{ runc_bin_dir }}/{{ runc_version }}/runc"
+    dest: /usr/local/sbin/runc
+    state: link
+    force: true
